@@ -14,7 +14,8 @@ Open `dist/index.html` in a browser, or serve the `dist` folder with any local w
 - `dist/script.js`: current year, active navigation state, mobile navigation, and pointer/scroll-responsive effects with reduced-motion support.
 - `dist/assets/logo.svg`: custom architectural D monogram, used in navigation and as the favicon.
 - `dist/assets/`: local project images, illustrative images, and the supplied résumé PDF. The `railway/` folder contains the supplied thesis visualizations and drawings; the `site/` folder contains supplied field-experience photographs in web-friendly format.
-- `.openai/hosting.json`: static output configuration for later Sites deployment. No website has been registered or published.
+- `.github/workflows/deploy-pages.yml`: publishes the `dist` folder to GitHub Pages whenever `main` is updated.
+- `.openai/hosting.json`: static output configuration retained for optional Sites hosting.
 
 ## Updating your work
 
@@ -22,9 +23,9 @@ Replace the illustrative residential, commercial, and construction images in `di
 
 To add future AI course work, copy a research article in the AI section and replace the heading, description, and tags with the completed project's details.
 
-## Deployment later
+## Deployment
 
-Publish the contents of `dist` as the site's public root on a static host. There is no server, database, contact-form service, or secret configuration. Contact uses email and LinkedIn links. The downloadable résumé contains the contact information from the supplied original PDF. A public link, assignment screenshots, and the final build report remain to be completed with deployment.
+The portfolio is published with GitHub Pages at https://ihsnayvid25.github.io/divyanshi-portfolio/. Pushing changes to `main` automatically republishes the contents of `dist`. There is no server, database, contact-form service, or secret configuration. Contact uses email and LinkedIn links. The downloadable résumé contains the contact information from the supplied original PDF.
 
 ## Image credits
 
