@@ -149,7 +149,7 @@ details[open] summary span{transform:rotate(45deg)}
 .workflow-art .diagram-grid{stroke:#B7B1A8;stroke-width:.6}
 .workflow-art .diagram-accent{stroke:var(--accent);stroke-width:2}
 .workflow-photo{display:block}
-.workflow-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 42%;filter:saturate(.55)}
+.workflow-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;filter:saturate(.55)}
 .capture-corner{position:absolute;inset:12px;border:1px solid #F7F5F1C0}
 .workflow-stage p{font-size:.83rem;font-weight:600;margin-top:16px;line-height:1.5}
 .workflow-stage p>span{margin-right:7px;font-size:.64rem;color:var(--muted)}

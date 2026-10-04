@@ -2,18 +2,31 @@ const year = document.getElementById('year');
 if (year) year.textContent = new Date().getFullYear();
 
 const links = [...document.querySelectorAll('.header nav a')];
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    for (const entry of entries) if (entry.isIntersecting) {
-      links.forEach(link => {
-        const active = link.hash === '#' + entry.target.id;
-        link.classList.toggle('active', active);
-        if (active) link.setAttribute('aria-current', 'location');
-        else link.removeAttribute('aria-current');
-      });
-    }
-  }, { rootMargin: '-15% 0px -55% 0px', threshold: 0 });
-  document.querySelectorAll('main section[id]').forEach(section => observer.observe(section));
+const sections = [...document.querySelectorAll('main section[id]')];
+if (sections.length) {
+  let scheduled = false;
+  function updateNavigation() {
+    scheduled = false;
+    const readingPoint = Math.max(100, window.innerHeight * .3);
+    const current = sections.find(section => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= readingPoint && rect.bottom > readingPoint;
+    });
+    links.forEach(link => {
+      const active = Boolean(current && link.hash === '#' + current.id);
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }
+  function scheduleNavigation() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(updateNavigation);
+  }
+  window.addEventListener('scroll', scheduleNavigation, { passive: true });
+  window.addEventListener('resize', scheduleNavigation, { passive: true });
+  updateNavigation();
 }
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
