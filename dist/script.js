@@ -1,5 +1,7 @@
-document.getElementById('year').textContent = new Date().getFullYear();
-const links = [...document.querySelectorAll('nav a')];
+const year = document.getElementById('year');
+if (year) year.textContent = new Date().getFullYear();
+
+const links = [...document.querySelectorAll('.header nav a')];
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) if (entry.isIntersecting) {
@@ -14,127 +16,80 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('main section[id]').forEach(section => observer.observe(section));
 }
 
-// Respond to pointer movement without intercepting clicks or touch scrolling.
-const ambient = document.querySelector('.ambient');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-let pendingFrame = 0;
-let pointerX = 0;
-let pointerY = 0;
-function paintAmbient() {
-  pendingFrame = 0;
-  if (reducedMotion.matches) return;
-  ambient.style.setProperty('--pointer-x', `${pointerX}px`);
-  ambient.style.setProperty('--pointer-y', `${pointerY}px`);
-  ambient.style.setProperty('--cad-x', `${pointerX * 0.018}px`);
-  ambient.style.setProperty('--cad-y', `${pointerY * 0.018}px`);
-  ambient.style.setProperty('--cad-depth-x', `${pointerX * -0.012}px`);
-  ambient.style.setProperty('--cad-depth-y', `${pointerY * -0.012}px`);
-  ambient.style.setProperty('--cad-depth-reverse-x', `${pointerX * 0.012}px`);
-  ambient.style.setProperty('--cad-depth-reverse-y', `${pointerY * 0.012}px`);
-  ambient.style.setProperty('--liquid-one-x', `${pointerX * 0.03}px`);
-  ambient.style.setProperty('--liquid-one-y', `${pointerY * 0.03}px`);
-  ambient.style.setProperty('--liquid-two-x', `${pointerX * -0.02}px`);
-  ambient.style.setProperty('--liquid-two-y', `${pointerY * -0.02}px`);
-  ambient.style.setProperty('--liquid-three-x', `${pointerX * 0.04}px`);
-  ambient.style.setProperty('--liquid-three-y', `${pointerY * 0.04}px`);
-  ambient.style.setProperty('--scroll-shift', `${Math.min(window.scrollY * 0.035, 100)}px`);
-}
-function scheduleAmbient() {
-  if (!reducedMotion.matches && !pendingFrame) pendingFrame = requestAnimationFrame(paintAmbient);
-}
-window.addEventListener('pointermove', event => {
-  pointerX = event.clientX - window.innerWidth / 2;
-  pointerY = event.clientY - window.innerHeight * 0.45;
-  scheduleAmbient();
-}, { passive: true });
-window.addEventListener('scroll', scheduleAmbient, { passive: true });
-document.documentElement.addEventListener('pointerleave', () => {
-  pointerX = 0;
-  pointerY = 0;
-  scheduleAmbient();
-});
-reducedMotion.addEventListener('change', () => {
-  if (reducedMotion.matches) {
-    cancelAnimationFrame(pendingFrame);
-    pendingFrame = 0;
-    ambient.style.removeProperty('--pointer-x');
-    ambient.style.removeProperty('--pointer-y');
-    ambient.style.removeProperty('--scroll-shift');
-    ambient.style.removeProperty('--cad-x');
-    ambient.style.removeProperty('--cad-y');
-    ambient.style.removeProperty('--cad-depth-x');
-    ambient.style.removeProperty('--cad-depth-y');
-    ambient.style.removeProperty('--cad-depth-reverse-x');
-    ambient.style.removeProperty('--cad-depth-reverse-y');
-  } else scheduleAmbient();
-});
-
-// A drafting crosshair follows the pointer and identifies interactive elements.
-const cursorCompass = document.querySelector('.cursor-compass');
-const cursorLabel = cursorCompass?.querySelector('.cursor-label');
 const finePointer = window.matchMedia('(pointer: fine)');
-let cursorTargetX = -80;
-let cursorTargetY = -80;
-let cursorCurrentX = -80;
-let cursorCurrentY = -80;
 
-function animateCursor() {
-  if (!cursorCompass || !finePointer.matches || reducedMotion.matches) return;
-  cursorCurrentX += (cursorTargetX - cursorCurrentX) * 0.2;
-  cursorCurrentY += (cursorTargetY - cursorCurrentY) * 0.2;
-  cursorCompass.style.transform = `translate3d(${cursorCurrentX - 17}px, ${cursorCurrentY - 17}px, 0)`;
-  requestAnimationFrame(animateCursor);
-}
-
-if (cursorCompass && finePointer.matches && !reducedMotion.matches) {
-  animateCursor();
-  window.addEventListener('pointermove', event => {
-    cursorTargetX = event.clientX;
-    cursorTargetY = event.clientY;
-    cursorCompass.classList.add('is-visible');
+// Movement belongs to the project image, so the profile stays steady.
+const projectVisual = document.querySelector('.feature-visual');
+if (projectVisual) {
+  const resetVisual = () => {
+    projectVisual.classList.remove('is-tracking');
+    for (const property of ['--image-x', '--image-y']) projectVisual.style.setProperty(property, '0px');
+    for (const property of ['--image-rx', '--image-ry']) projectVisual.style.setProperty(property, '0deg');
+  };
+  projectVisual.addEventListener('pointermove', event => {
+    if (!finePointer.matches || reducedMotion.matches || event.pointerType === 'touch') return;
+    const rect = projectVisual.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+    const y = Math.max(0, Math.min(rect.height, event.clientY - rect.top));
+    const dx = x / rect.width * 2 - 1;
+    const dy = y / rect.height * 2 - 1;
+    projectVisual.style.setProperty('--image-x', (dx * 4).toFixed(2) + 'px');
+    projectVisual.style.setProperty('--image-y', (dy * 3).toFixed(2) + 'px');
+    projectVisual.style.setProperty('--image-rx', (dy * -.35).toFixed(2) + 'deg');
+    projectVisual.style.setProperty('--image-ry', (dx * .45).toFixed(2) + 'deg');
+    projectVisual.style.setProperty('--cursor-x', Math.min(Math.max(x + 16, 10), rect.width - 116) + 'px');
+    projectVisual.style.setProperty('--cursor-y', Math.min(Math.max(y + 16, 10), rect.height - 42) + 'px');
+    projectVisual.classList.add('is-tracking');
   }, { passive: true });
-  document.documentElement.addEventListener('pointerleave', () => cursorCompass.classList.remove('is-visible'));
-  document.addEventListener('pointerover', event => {
-    const target = event.target.closest('[data-cursor], a, summary');
-    cursorCompass.classList.toggle('is-active', Boolean(target));
-    if (target && cursorLabel) cursorLabel.textContent = target.dataset.cursor || 'OPEN';
-  });
+  projectVisual.addEventListener('pointerleave', resetVisual);
+  projectVisual.addEventListener('blur', resetVisual);
+  reducedMotion.addEventListener('change', resetVisual);
+  finePointer.addEventListener('change', resetVisual);
 }
 
-// Subtle depth on the portrait connects the image to the cursor without disrupting reading.
-const hero = document.querySelector('.hero');
-const portrait = document.querySelector('.hero-portrait');
-if (hero && portrait) {
-  hero.addEventListener('pointermove', event => {
-    if (!finePointer.matches || reducedMotion.matches) return;
-    const rect = hero.getBoundingClientRect();
-    const x = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
-    const y = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2));
-    portrait.style.setProperty('--portrait-x', `${x * 7}px`);
-    portrait.style.setProperty('--portrait-y', `${y * 5}px`);
-    portrait.style.setProperty('--portrait-rx', `${y * -1.8}deg`);
-    portrait.style.setProperty('--portrait-ry', `${x * 2.2}deg`);
-  }, { passive: true });
-  hero.addEventListener('pointerleave', () => {
-    portrait.style.setProperty('--portrait-x', '0px');
-    portrait.style.setProperty('--portrait-y', '0px');
-    portrait.style.setProperty('--portrait-rx', '0deg');
-    portrait.style.setProperty('--portrait-ry', '0deg');
+// Two labeled project views; the native slider also supports touch and keyboard.
+const comparison = document.querySelector('.comparison-view');
+const reveal = document.getElementById('drawing-reveal');
+const revealOutput = document.getElementById('drawing-reveal-value');
+if (comparison && reveal) {
+  function updateComparison() {
+    comparison.style.setProperty('--drawing-reveal', reveal.value + '%');
+    if (revealOutput) revealOutput.textContent = reveal.value + '%';
+    reveal.setAttribute('aria-valuetext', reveal.value + '% drawing revealed');
+  }
+  function setRevealFromPointer(event) {
+    const rect = comparison.getBoundingClientRect();
+    reveal.value = String(Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100))));
+    updateComparison();
+  }
+  let dragging = false;
+  comparison.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    dragging = true;
+    comparison.setPointerCapture(event.pointerId);
+    setRevealFromPointer(event);
   });
+  comparison.addEventListener('pointermove', event => {
+    if (dragging) setRevealFromPointer(event);
+  });
+  comparison.addEventListener('pointerup', () => { dragging = false; });
+  comparison.addEventListener('pointercancel', () => { dragging = false; });
+  comparison.addEventListener('lostpointercapture', () => { dragging = false; });
+  reveal.addEventListener('input', updateComparison);
+  updateComparison();
 }
 
-// Compact navigation for phones and small tablets.
+// Compact navigation and the featured link into the site-experience tile.
 const siteHeader = document.querySelector('.header');
 const menuToggle = document.querySelector('.menu-toggle');
 const siteNav = document.querySelector('#site-nav');
-
 function closeMenu() {
   if (!siteHeader || !menuToggle) return;
   siteHeader.classList.remove('menu-open');
   menuToggle.setAttribute('aria-expanded', 'false');
   menuToggle.setAttribute('aria-label', 'Open navigation');
 }
-
 if (siteHeader && menuToggle && siteNav) {
   menuToggle.addEventListener('click', () => {
     const open = !siteHeader.classList.contains('menu-open');
@@ -146,9 +101,23 @@ if (siteHeader && menuToggle && siteNav) {
     if (event.target.closest('a')) closeMenu();
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeMenu();
+    if (event.key === 'Escape' && siteHeader.classList.contains('menu-open')) {
+      closeMenu();
+      menuToggle.focus();
+    }
   });
   window.matchMedia('(min-width: 761px)').addEventListener('change', event => {
     if (event.matches) closeMenu();
   });
+}
+const siteExperience = document.getElementById('site-experience');
+if (siteExperience) {
+  function openSiteExperience() {
+    if (window.location.hash === '#site-experience') {
+      const details = siteExperience.querySelector('details');
+      if (details) details.open = true;
+    }
+  }
+  openSiteExperience();
+  window.addEventListener('hashchange', openSiteExperience);
 }
