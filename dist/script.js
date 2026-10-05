@@ -2,7 +2,9 @@ const year = document.getElementById('year');
 if (year) year.textContent = new Date().getFullYear();
 
 const links = [...document.querySelectorAll('.header nav a')];
-const sections = [...document.querySelectorAll('main section[id]')];
+const sections = [...document.querySelectorAll('main section[id]')].filter(section =>
+  links.some(link => link.pathname === window.location.pathname && link.hash === '#' + section.id)
+);
 if (sections.length) {
   let scheduled = false;
   function updateNavigation() {
@@ -27,38 +29,6 @@ if (sections.length) {
   window.addEventListener('scroll', scheduleNavigation, { passive: true });
   window.addEventListener('resize', scheduleNavigation, { passive: true });
   updateNavigation();
-}
-
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const finePointer = window.matchMedia('(pointer: fine)');
-
-// Movement belongs to the project image, so the profile stays steady.
-const projectVisual = document.querySelector('.feature-visual');
-if (projectVisual) {
-  const resetVisual = () => {
-    projectVisual.classList.remove('is-tracking');
-    for (const property of ['--image-x', '--image-y']) projectVisual.style.setProperty(property, '0px');
-    for (const property of ['--image-rx', '--image-ry']) projectVisual.style.setProperty(property, '0deg');
-  };
-  projectVisual.addEventListener('pointermove', event => {
-    if (!finePointer.matches || reducedMotion.matches || event.pointerType === 'touch') return;
-    const rect = projectVisual.getBoundingClientRect();
-    const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
-    const y = Math.max(0, Math.min(rect.height, event.clientY - rect.top));
-    const dx = x / rect.width * 2 - 1;
-    const dy = y / rect.height * 2 - 1;
-    projectVisual.style.setProperty('--image-x', (dx * 4).toFixed(2) + 'px');
-    projectVisual.style.setProperty('--image-y', (dy * 3).toFixed(2) + 'px');
-    projectVisual.style.setProperty('--image-rx', (dy * -.35).toFixed(2) + 'deg');
-    projectVisual.style.setProperty('--image-ry', (dx * .45).toFixed(2) + 'deg');
-    projectVisual.style.setProperty('--cursor-x', Math.min(Math.max(x + 16, 10), rect.width - 116) + 'px');
-    projectVisual.style.setProperty('--cursor-y', Math.min(Math.max(y + 16, 10), rect.height - 42) + 'px');
-    projectVisual.classList.add('is-tracking');
-  }, { passive: true });
-  projectVisual.addEventListener('pointerleave', resetVisual);
-  projectVisual.addEventListener('blur', resetVisual);
-  reducedMotion.addEventListener('change', resetVisual);
-  finePointer.addEventListener('change', resetVisual);
 }
 
 // Two labeled project views; the native slider also supports touch and keyboard.
@@ -93,7 +63,7 @@ if (comparison && reveal) {
   updateComparison();
 }
 
-// Compact navigation and the featured link into the site-experience tile.
+// Compact navigation and deep links into experience responsibilities.
 const siteHeader = document.querySelector('.header');
 const menuToggle = document.querySelector('.menu-toggle');
 const siteNav = document.querySelector('#site-nav');
@@ -123,14 +93,12 @@ if (siteHeader && menuToggle && siteNav) {
     if (event.matches) closeMenu();
   });
 }
-const siteExperience = document.getElementById('site-experience');
-if (siteExperience) {
-  function openSiteExperience() {
-    if (window.location.hash === '#site-experience') {
-      const details = siteExperience.querySelector('details');
-      if (details) details.open = true;
-    }
-  }
-  openSiteExperience();
-  window.addEventListener('hashchange', openSiteExperience);
+function openExperienceResponsibilities() {
+  const experienceIds = ['delivery-experience', 'architectural-experience'];
+  const targetId = window.location.hash.slice(1);
+  if (!experienceIds.includes(targetId)) return;
+  const details = document.getElementById(targetId)?.querySelector('details');
+  if (details) details.open = true;
 }
+openExperienceResponsibilities();
+window.addEventListener('hashchange', openExperienceResponsibilities);
